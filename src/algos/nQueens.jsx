@@ -1,10 +1,10 @@
 import { useState } from "react";
-import NQueensComponents from "../components/knightComponents/nqueensComponents";
+import NQueensComponents from "../components/nqueensComponents/nqueensComponents";
 
 export default function Nqueens() {
-  const [boardInput, setBoardInput] = useState(5);
+  const [boardInput, setBoardInput] = useState(6);
 
-  const [boardSize, setBoardSize] = useState(5);
+  const [boardSize, setBoardSize] = useState(6);
 
   const handleInputChange = (event) => {
     setBoardInput(event.target.value);
@@ -19,14 +19,14 @@ export default function Nqueens() {
     <div className="p-8 flex-col items-center justify-center ">
       <form onSubmit={handleSubmit}>
         <label className="mr-4">
-          Enter chess board size (3 - 8) :
+         N-QUEENS - Enter chess board size (3 - 12) :
           <input
             className="ml-4 outline rounded-sm p-2 w-24"
             type="number"
             value={boardInput}
             onChange={handleInputChange}
             min={3}
-            max={8}
+            max={12}
           />
         </label>
       </form>

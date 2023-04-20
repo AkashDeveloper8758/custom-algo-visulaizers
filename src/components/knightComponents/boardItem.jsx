@@ -36,7 +36,6 @@ export default function BoardItem({
              ? "border-green-400 border-4 bg-green-100"
              : "font-bold border-gray-500")
          }
-         
          `}
     >
       <div className="absolute left-1 top-1 w-4 h-4  text-xs "> {name} </div>

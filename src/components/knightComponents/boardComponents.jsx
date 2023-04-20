@@ -9,15 +9,16 @@ export default function BoardComponents({ size }) {
   const [pathArray, setPathArray] = useState([]);
   const [isReached, setIsReached] = useState(null);
   const [shortestPath, setShortestPath] = useState([]);
+  const [isIterating, setIsIterating] = useState(false);
 
   function clearStates() {
     setStartCordinate([]);
     setEndCordinates([]);
     setPathArray([]);
     setIsReached(null);
-    setShortestPath([])
+    setShortestPath([]);
   }
-  
+
   useEffect(() => {
     clearStates();
   }, [size]);
@@ -46,19 +47,21 @@ export default function BoardComponents({ size }) {
     });
   }
 
-  function createShortestPath(parentMap, start, end,size) {
-    
-    let [startId, endId] = [getPathNo(start[0], start[1],size), getPathNo(end[0], end[1],size)];
+  function createShortestPath(parentMap, start, end, size) {
+    let [startId, endId] = [
+      getPathNo(start[0], start[1], size),
+      getPathNo(end[0], end[1], size),
+    ];
     let pathArr = [endId];
-    let currId = endId
+    let currId = endId;
 
     while (parentMap[currId] && currId != startId) {
       pathArr.push(parentMap[currId]);
       currId = parentMap[currId];
     }
     console.log(parentMap);
-    pathArr = pathArr.reverse()
-    console.log('final path : ',pathArr)
+    pathArr = pathArr.reverse();
+    console.log("final path : ", pathArr);
     setShortestPath(pathArr);
   }
 
@@ -83,10 +86,10 @@ export default function BoardComponents({ size }) {
           await waitFor(20);
           setPathArray((prev) => [...prev, getPathNo(newX, newY, size)]);
           parentMap[getPathNo(newX, newY, size)] = getPathNo(x, y, size);
-          
+
           if (newX === end[0] && newY === end[1]) {
             setIsReached(true);
-            createShortestPath(parentMap, start, end,size);
+            createShortestPath(parentMap, start, end, size);
             return;
           }
           q.push([newX, newY, d + 1]);
@@ -97,36 +100,15 @@ export default function BoardComponents({ size }) {
   };
 
   const stepsToReach = async () => {
+    if(isIterating) return
     if (startCordinate.length == 0 || endCordinates.length == 0) return;
+    setIsIterating(true)
     await bfsTraversal(startCordinate, endCordinates, size);
+    setIsIterating(false)
   };
 
   return (
     <div className="flex-col m-8 items-center ">
-      {myArray.map((_, x) => {
-        return (
-          <div key={x} className="flex justify-center ">
-            {myArray.map((_, y) => {
-              // console.log('is marked : ',[x,y] == startCordinate)
-              let currKey = getPathNo(x, y, size) 
-              return (
-                <BoardItem
-                pathMarkingNumber={(shortestPath.length > 0 && shortestPath.includes(currKey)) ? shortestPath.indexOf(currKey) +1 : false  }
-                  key={currKey}
-                  isStart={startCordinate[0] == x && startCordinate[1] == y}
-                  isEnd={endCordinates[0] == x && endCordinates[1] == y}
-                  onClickHandler={onBoardItemClick}
-                  cordinates={[x, y]}
-                  isMarked={pathArray.includes(currKey)}
-                  name={currKey +1}
-                  isReached={isReached}
-                />
-              );
-            })}
-          </div>
-        );
-      })}
-
       <div className="flex justify-center">
         {startCordinate.length > 0 && endCordinates.length > 0 && (
           <div className="p-4">
@@ -142,7 +124,7 @@ export default function BoardComponents({ size }) {
               onClick={() => {
                 setPathArray([]);
                 setIsReached(null);
-                setShortestPath([])
+                setShortestPath([]);
                 stepsToReach();
               }}
               variant="outlined"
@@ -154,6 +136,33 @@ export default function BoardComponents({ size }) {
           </div>
         )}
       </div>
+      {myArray.map((_, x) => {
+        return (
+          <div key={x} className="flex justify-center ">
+            {myArray.map((_, y) => {
+              // console.log('is marked : ',[x,y] == startCordinate)
+              let currKey = getPathNo(x, y, size);
+              return (
+                <BoardItem
+                  pathMarkingNumber={
+                    shortestPath.length > 0 && shortestPath.includes(currKey)
+                      ? shortestPath.indexOf(currKey) + 1
+                      : false
+                  }
+                  key={currKey}
+                  isStart={startCordinate[0] == x && startCordinate[1] == y}
+                  isEnd={endCordinates[0] == x && endCordinates[1] == y}
+                  onClickHandler={onBoardItemClick}
+                  cordinates={[x, y]}
+                  isMarked={pathArray.includes(currKey)}
+                  name={currKey + 1}
+                  isReached={isReached}
+                />
+              );
+            })}
+          </div>
+        );
+      })}
     </div>
   );
 }

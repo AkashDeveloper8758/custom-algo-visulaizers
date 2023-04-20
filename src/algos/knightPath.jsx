@@ -20,11 +20,12 @@ export default function KnightPath() {
    
     setBoardSize(Number(boardInput))
   }
+  
   return (
     <div className="p-8 flex-col items-center justify-center ">
     <form onSubmit={handleSubmit}>
       <label className="mr-4">
-        Enter chess board size (3 - 12) :
+      KNIGHT PATH - Enter chess board size (3 - 20) :
         <input
           className="ml-4 outline rounded-sm p-2 w-24"
           type="number"
