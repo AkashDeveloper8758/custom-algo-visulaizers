@@ -1,0 +1,1 @@
+export enum AlgoType {Balancer, KnightPath, NQueens, ShortestPath, PathFinderVisualizerr}
