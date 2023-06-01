@@ -19,6 +19,7 @@ export const NavBar = () => {
       <NavItem navTitle={"Balancer"} routePath={"/balancer"} />
       <NavItem navTitle={"Knight Path"} routePath={"/horsePath"} />
       <NavItem navTitle={"N Queens"} routePath={"/nqeens"} />
+      <NavItem navTitle={"Path Finder"} routePath={"/pathfinder"} />
     </div>
   );
 };
