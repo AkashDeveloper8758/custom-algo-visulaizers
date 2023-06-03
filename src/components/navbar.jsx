@@ -1,11 +1,34 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { useContext } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { AlgoType } from "../helpers/staticConstants";
+import { NavContext } from "../providers/mainProviders";
 
-const NavItem = ({ navTitle, routePath }) => {
+const NavItem = ({ navTitle, routePath, navItemType }) => {
+  const { navtype, setNavType } = useContext(NavContext);
+  const location = useLocation()
+
+  useEffect(()=>{
+    let newLocation = Array.from(location.pathname).splice(1).join('')
+    console.log('nav type :',newLocation)
+    setNavType(newLocation)
+  },[location.pathname])
+  
+
+  const isActive = navtype === navItemType;
   return (
-    <div>
+    <div
+      onClick={() => {
+        setNavType(navItemType);
+      }}
+    >
       <Link to={routePath}>
-        <div className=" p-4 font-semibold hover:bg-orange-200 ">
+        <div
+          className={` p-4 font-semibold hover:bg-orange-300 ${
+            isActive ? "bg-orange-300" : ""
+          } `}
+        >
           {navTitle}
         </div>
       </Link>
@@ -16,10 +39,27 @@ const NavItem = ({ navTitle, routePath }) => {
 export const NavBar = () => {
   return (
     <div className="rounded-sm w-full flex  bg-slate-300 ">
-      <NavItem navTitle={"Balancer"} routePath={"/balancer"} />
-      <NavItem navTitle={"Knight Path"} routePath={"/horsePath"} />
-      <NavItem navTitle={"N Queens"} routePath={"/nqeens"} />
-      <NavItem navTitle={"Path Finder"} routePath={"/pathfinder"} />
+      <NavItem
+        navTitle={"Balancer"}
+        routePath={"balancer"}
+        navItemType={AlgoType.Balancer}
+      />
+      <NavItem
+        navTitle={"Knight Path"}
+        routePath={"horsePath"}
+        navItemType={AlgoType.KnightPath}
+      />
+      <NavItem
+        navTitle={"N Queens"}
+        routePath={"nqeens"}
+        navItemType={AlgoType.NQueens}
+      />
+      <NavItem
+        navTitle={"Path finding"}
+        routePath={"pathFinder"}
+        navItemType={AlgoType.PathFinderVisualizerr}
+      />
+     
     </div>
   );
 };

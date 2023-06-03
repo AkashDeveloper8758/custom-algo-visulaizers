@@ -23,11 +23,11 @@ export default function BoardItem({
       onClick={() => onClickHandler([x, y])}
       className={`
       
-      ${(pathMarkingNumber && !isEnd) && "bg-purple-200" }
+      ${(pathMarkingNumber && !isEnd) && "bg-purple-300" }
       relative w-20 h-20 flex justify-center items-center  border-2 border-gray-200 hover:bg-slate-200 
       ${isStart && "font-bold border-gray-500 "}
      
-      ${isMarked && "bg-amber-100" }
+      ${isMarked && "bg-amber-200" }
          ${
            isEnd &&
            (isReached === false
@@ -38,7 +38,7 @@ export default function BoardItem({
          }
          `}
     >
-      <div className="absolute left-1 top-1 w-4 h-4  text-xs "> {name} </div>
+      {/* <div className="absolute left-1 top-1 w-4 h-4  text-xs "> {name} </div> */}
       <div className="font-bold" >{getCenterString()}</div>
     </div>
   );
