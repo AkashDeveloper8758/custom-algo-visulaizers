@@ -190,6 +190,7 @@ export default function NQueensComponents({ size }) {
                   name={currKey + 1}
                   isHighlight={queensPath.includes(currKey)}
                   isReached={isReached}
+                  size = {[size,size]}
                 />
               );
             })}

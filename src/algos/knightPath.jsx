@@ -3,9 +3,9 @@ import BoardComponents from '../components/knightComponents/boardComponents';
 
 
 export default function KnightPath() {
-  const [boardInput, setBoardInput] = useState(5);
+  const [boardInput, setBoardInput] = useState(10);
 
-  const [boardSize, setBoardSize] = useState(5);
+  const [boardSize, setBoardSize] = useState(10);
 
 
   const handleInputChange = (event) => {
@@ -23,6 +23,9 @@ export default function KnightPath() {
   
   return (
     <div className="p-8 flex-col items-center justify-center ">
+       <div className=" self-center w-full border-t-2  p-4 border-b-2 m-4 text-sm ">
+        Click on the board to choose the start and end points, and the algo will find the shortest Knight path to reach the target. 
+      </div>
     <form onSubmit={handleSubmit}>
       <label className="mr-4">
       KNIGHT PATH - Enter chess board size (3 - 20) :

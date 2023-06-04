@@ -157,6 +157,7 @@ export default function BoardComponents({ size }) {
                   isMarked={pathArray.includes(currKey)}
                   name={currKey + 1}
                   isReached={isReached}
+                  size={[size,size]}
                 />
               );
             })}

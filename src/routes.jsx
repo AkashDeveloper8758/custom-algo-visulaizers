@@ -1,4 +1,4 @@
-import { createBrowserRouter, redirect } from "react-router-dom";
+import { createBrowserRouter, createHashRouter, redirect,Route  } from "react-router-dom";
 import Balancer from "./algos/balancer";
 import KnightPath from "./algos/knightPath";
 import Nqueens from "./algos/nQueens";
@@ -6,16 +6,18 @@ import PathFinder from "./algos/pathFinder";
 import App from "./App";
 
 
-export const mainRouter = createBrowserRouter([
+export const mainRouter = createHashRouter([
   {
     path: "/",
     element: <App />,
-    children:[
+    
+    children: [
+      
       {
-        path:"/",
-        loader:()=>{
-          return redirect('balancer')
-        }
+        path: "/",
+        loader: () => {
+          return redirect("balancer");
+        },
       },
       {
         path: "balancer",
@@ -33,7 +35,6 @@ export const mainRouter = createBrowserRouter([
         path: "pathFinder",
         element: <PathFinder />,
       },
-    ]
+    ],
   },
-  
 ]);

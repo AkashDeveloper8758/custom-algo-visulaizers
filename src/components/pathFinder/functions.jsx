@@ -10,16 +10,15 @@ function getPathNo(x, y, m) {
   return x * m + y;
 }
 
-export async function bfsFinder(start, end, borders, updatePathFunction, n, m) {
-  console.log("--- started");
+export async function bfsFinder(start, end, borders, updatePathFunction, n, m,setCompute) {
   let stack = [start];
   let childrenToParentMap = {};
   let isFound = false;
+  let iteration = 0
 
   while (stack.length > 0) {
     let curr = stack.shift();
     if (JSON.stringify(curr) === JSON.stringify(end)) {
-      console.log("found the element : ", [curr, end]);
       isFound = true;
       break;
     } else {
@@ -46,6 +45,8 @@ export async function bfsFinder(start, end, borders, updatePathFunction, n, m) {
           }
           await waitFor(10);
         }
+        iteration +=1
+        setCompute(iteration)
       }
       if (childrenToParentMap[getPathNo(end[0], end[1], m)] != undefined) {
         isFound = true;
@@ -65,6 +66,7 @@ export async function bfsFinder(start, end, borders, updatePathFunction, n, m) {
   return pathOrder.reverse();
 }
 
+var _dfsComputeCount = 0
 async function dfsHelper(
   end,
   borders,
@@ -74,7 +76,8 @@ async function dfsHelper(
   path,
   visited,
   i,
-  j
+  j,
+  setCompute
 ) {
   let dirs = [
     [1, 0],
@@ -86,6 +89,7 @@ async function dfsHelper(
     let x = i + d[0],
       y = j + d[1];
     let newPathValue = getPathNo(x, y, m);
+    _dfsComputeCount +=1
 
     if (
       isValidCordinate(x, y, n, m) &&
@@ -93,14 +97,11 @@ async function dfsHelper(
       !visited.has(newPathValue)
     ) {
       visited.add(newPathValue);
-      // console.log('visited : ',visited)
+    
       updatePathFunction(x, y);
-      await waitFor(30);
+      await waitFor(15);
       path.push(newPathValue);
-      console.log(" end / curr : ", [
-        getPathNo(end[0], end[1], m),
-        newPathValue,
-      ]);
+     setCompute(_dfsComputeCount)
       if (getPathNo(end[0], end[1], m) == newPathValue) return true;
 
       var res = await dfsHelper(
@@ -112,7 +113,8 @@ async function dfsHelper(
         path,
         visited,
         x,
-        y
+        y,
+        setCompute
       );
       if (res) {
         console.log("pop ------- ", newPathValue);
@@ -124,11 +126,12 @@ async function dfsHelper(
   return false;
 }
 
-export async function dfsFinder(start, end, borders, updatePathFunction, n, m) {
+export async function dfsFinder(start, end, borders, updatePathFunction, n, m,setCompute) {
   let visited = new Set();
+  _dfsComputeCount = 0
 
   let parent = getPathNo(end[0], end[1], m);
-  let pathOrder = [parent];
+  let pathOrder = [];
   await dfsHelper(
     end,
     borders,
@@ -138,30 +141,16 @@ export async function dfsFinder(start, end, borders, updatePathFunction, n, m) {
     pathOrder,
     visited,
     start[0],
-    start[1]
+    start[1],
+    setCompute
   );
+  if (pathOrder.length > 0) {
+    pathOrder.unshift(parent);
+  }
   console.log("path order : ", pathOrder);
 
   return pathOrder;
 }
-
-// def dikstraAlgorithm(graph:list[list],s=0):
-//     v = len(graph)
-//     visited = [False for _ in range(v)]
-//     dist = [math.inf for _ in range(v)]
-//     dist[s]= 0
-
-//     for _ in range(v):
-//         u = -1
-//         for i in range(v):
-//             if not visited[i] and (u == -1 or dist[u] > dist[i] ):
-//                 u = i
-//         visited[u]= True
-//         for i in range(v):
-//             if not visited[i] and graph[u][i] != 0:
-//                 dist[i] = min(dist[i],dist[u]+graph[u][i])
-
-//     return dist
 
 export async function dijkstraFunction(
   start,
@@ -169,41 +158,74 @@ export async function dijkstraFunction(
   borders,
   updatePathFunction,
   n,
-  m
+  m,
+  setComputeCount
 ) {
-  let mat = Array.from({length:n}).map((_)=>  new Array(m).fill(0))
-  for(let i=0;i<n;i ++){
-    for(let j=0; j< m; j++){
-      let currValue = getPathNo(i,j,m)
-      if(borders.includes(currValue)){
-        mat[i][j] = 1
+  let iterations = 0
+  let weight = Array.from({ length: n }).map((_) => new Array(m).fill(0));
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < m; j++) {
+      let currValue = getPathNo(i, j, m);
+      if (borders.includes(currValue)) {
+        weight[i][j] = 1;
       }
     }
   }
-  let visited = new Set()
-  let dist = {};
-  let reverseMap = {}
-  let startValue = getPathNo(start[0],start[1],m)
-  let endValue = getPathNo(end[0],end[1],m)
-  dist[startValue] = 0
-  
-  let totalLength = n * m
-  for(let i = 0; i < totalLength; i++ ){
-    let u = [-1,-1]
-    for(let x= 0; x < n; x++){
-      for(let y=0; y < m; y++){
-        let value = getPathNo(x,y,m)
-       
-        if(!visited.has(value) && (u[0] == -1 || mat[u[0]][u[1]] > mat[x][y] ) ){
-          u = [x,y]
+  let dist = Array.from({ length: n }).map((_) => new Array(m).fill(n * m + 1));
+  let visited = new Set();
+  console.log("dist : ", dist);
+  let reverseMap = {};
+  dist[start[0]][start[1]] = 0;
+
+  let totalLength = n * m;
+  for (let i = 0; i < totalLength; i++) {
+    let u = [-1, -1];
+    for (let x = 0; x < n; x++) {
+      for (let y = 0; y < m; y++) {
+        let value = getPathNo(x, y, m);
+        if (
+          !visited.has(value) &&
+          (u[0] == -1 || dist[u[0]][u[1]] > dist[x][y])
+        ) {
+          u = [x, y];
+        }
+        iterations +=1
+      }
+    }
+    visited.add(getPathNo(u[0], u[1], m));
+    updatePathFunction(u[0], u[1]);
+    let dirRoutes = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ];
+    for (let d of dirRoutes) {
+      let x = u[0] + d[0],
+        y = u[1] + d[1];
+      let currValue = getPathNo(x, y, m);
+      if (isValidCordinate(x, y, n, m) && !visited.has(currValue)) {
+        let currWeight = dist[u[0]][u[1]] + weight[x][y];
+        if (dist[x][y] > currWeight) {
+          dist[x][y] = currWeight;
+          reverseMap[currValue] = getPathNo(u[0], u[1], m);
         }
       }
+      iterations +=1
     }
-    let smallestIndexV = getPathNo(u[0],u[1],m)
-    visited.add(smallestIndexV)
-    await waitFor(20)
-    updatePathFunction(u[0],u[1])
+    await waitFor(10);
+    setComputeCount(iterations)
   }
 
-  
+  let parent = getPathNo(end[0], end[1], m);
+  let pathOrder = [parent];
+ 
+  while (reverseMap[parent] != undefined) {
+    parent = reverseMap[parent];
+    pathOrder.push(parent);
+    if (parent == getPathNo(start[0], start[1], m)) break;
+    
+  }
+  console.log("dijkstra path order ; ", pathOrder);
+  return pathOrder.reverse();
 }

@@ -1,7 +1,7 @@
 import { Button } from "@mui/material";
 import { useEffect, useState } from "react";
 import { waitFor } from "../../helpers/staticConstants";
-import { dfsFinder, bfsFinder } from "./functions";
+import { dfsFinder, bfsFinder, dijkstraFunction } from "./functions";
 import PathFinderItem from "./pathItem";
 
 class MouseEventWithType {
@@ -12,15 +12,15 @@ class MouseEventWithType {
 const PathFinderAlgoType = {
   BFS: "BFS",
   DFS: "DFS",
-  // DIJKSTRA: "DIJKSTRA",
+  DIJKSTRA: "DIJKSTRA",
   // A_STAR: "A STAR",
 };
 
 export default function PathFinderComponent({ size }) {
   const horizontalCount = 40;
 
-  const [startCordinate, setStartCordinate] = useState([0, 0]);
-  const [endCordinates, setEndCordinates] = useState([0, horizontalCount - 1]);
+  const [startCordinate, setStartCordinate] = useState([3, 3]);
+  const [endCordinates, setEndCordinates] = useState([3, horizontalCount - 3]);
   const [borders, setBorders] = useState([]);
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [isRunning, setIsRunning] = useState(false); // if algo is running
@@ -29,21 +29,33 @@ export default function PathFinderComponent({ size }) {
   const [pathList, setPathList] = useState([]); // traversed path
   const [routeList, setRouteList] = useState([]); // route to target path
   const [isReached, setIsReached] = useState(false); // route to target path
+  const [computingCount, setComputingCount] = useState(0); // route to target path
+
+  let instructionMap = {};
+  const dijkstraInstructions = [
+    " In this dijkstra visualization, wall can be broken if no available path found ",
+    " Dijkstra algo, will try to find the traget with minimum wall break.",
+    " The path will not be shortest by distance but will be less costlier",
+  ];
+  instructionMap[PathFinderAlgoType.DIJKSTRA] = dijkstraInstructions;
+  instructionMap[PathFinderAlgoType.BFS] = [
+    "Breadth first search (BFS) will traverse all direction and will find the shortest path to the target"
+  ]
+  instructionMap[PathFinderAlgoType.DFS] = [
+    "Depth first search (DFS) will find the target in depth first (one-direction until not possible) manner, the found path need not to be the shortest "
+  ]
 
   const [mouseEventWithType, setMouseEventWithType] = useState(
-    MouseEventWithType.START
+    MouseEventWithType.BLANK
   );
 
   function clearStates() {
     if (isRunning) return true;
     console.log("--- cleared state --- ");
-    setStartCordinate([0, 0]);
-    setEndCordinates([0, horizontalCount - 1]);
+    setStartCordinate([3, 3]);
+    setEndCordinates([3, horizontalCount - 3]);
     setBorders([]);
-    setIsRunning(false);
-    setPathList([]);
-    setRouteList([]);
-    setIsReached(false);
+    clearPathOnly();
   }
   // clear only path and route, to start again
   function clearPathOnly() {
@@ -51,24 +63,15 @@ export default function PathFinderComponent({ size }) {
     setPathList([]);
     setRouteList([]);
     setIsReached(false);
+    setComputingCount(0);
   }
 
   function getPathNo(x, y) {
     return x * horizontalCount + y;
   }
 
-  const onBoardItemClick = (cord) => {
-    //   if (cord) {
-    //     if (startCordinate.length > 0) {
-    //       setEndCordinates(cord);
-    //     } else if (startCordinate.length == 0) {
-    //       setStartCordinate(cord);
-    //     }
-    //   }
-  };
-
   useEffect(() => {
-    clearStates();
+    if (!isRunning) clearStates();
   }, [size]);
 
   function getStringName(x, y) {
@@ -79,7 +82,9 @@ export default function PathFinderComponent({ size }) {
 
   function onMouseEnterEvent(cord) {
     if (isRunning) return;
-    
+    let start = getPathNo(startCordinate[0], startCordinate[1]);
+    let end = getPathNo(endCordinates[0], endCordinates[1]);
+
     let cordNumber = getPathNo(cord[0], cord[1]);
     if (isMouseDown) {
       if (mouseEventWithType == MouseEventWithType.START) {
@@ -90,7 +95,9 @@ export default function PathFinderComponent({ size }) {
         if (borders.includes(cordNumber)) {
           setBorders(borders.filter((e) => e != cordNumber));
         } else {
-          setBorders([...borders, cordNumber]);
+          if (cordNumber != start && cordNumber != end) {
+            setBorders([...borders, cordNumber]);
+          }
         }
       }
     }
@@ -98,6 +105,15 @@ export default function PathFinderComponent({ size }) {
   function onMouseUpEvent(cord) {
     if (isRunning) return;
     setIsMouseDown(false);
+    if (mouseEventWithType == MouseEventWithType.BLANK) return;
+
+    if (mouseEventWithType == MouseEventWithType.START) {
+      setStartCordinate(cord);
+    } else if (mouseEventWithType == MouseEventWithType.END) {
+      setEndCordinates(cord);
+    }
+    let downCord = getPathNo(cord[0], cord[1]);
+    setBorders(borders.filter((e) => e != downCord));
   }
 
   function onMouseDownEvent(cord) {
@@ -136,7 +152,8 @@ export default function PathFinderComponent({ size }) {
             setPathList((prevstate) => [...prevstate, getPathNo(x, y)]);
           },
           size,
-          horizontalCount
+          horizontalCount,
+          (value) => setComputingCount(value)
         );
 
         // setIsRunning(false);
@@ -152,14 +169,30 @@ export default function PathFinderComponent({ size }) {
             setPathList((prevstate) => [...prevstate, getPathNo(x, y)]);
           },
           size,
-          horizontalCount
+          horizontalCount,
+          (value) => setComputingCount(value)
+        );
+        break;
+      case PathFinderAlgoType.DIJKSTRA:
+        pathData = await dijkstraFunction(
+          startCordinate,
+          endCordinates,
+          borders,
+          (x, y) => {
+            setPathList((prevstate) => [...prevstate, getPathNo(x, y)]);
+          },
+          size,
+          horizontalCount,
+          (value) => setComputingCount(value)
         );
     }
-    console.log("path data : ", pathData);
+
+
     for (let item of pathData) {
       await waitFor(20);
       setRouteList((prev) => [...prev, item]);
     }
+
     if (pathData.length > 0) {
       setIsReached(true);
     }
@@ -167,46 +200,39 @@ export default function PathFinderComponent({ size }) {
   }
 
   return (
-    <div className="flex-col m-8 ">
-      <div className="flex justify-start">
+    <div className="flex-col  m-8 ">
+      <div className=" self-center w-full border-t-2  p-4 text-sm ">
+        You can move start and end positions, create wall, then click on the algo type to find the shortest path.
+      </div>
+      { instructionMap[algoType] && <div className="flex flex-col m-2 border-t-2 p-4 border-b-2">
+        {(instructionMap[algoType] ?? []).map((value, idx) => {
+          return (
+            <div className="text-sm" key={idx}>
+              { (instructionMap[algoType] ?? []).length > 1 ?  (`${idx + 1} .` ) : ""} {value}
+            </div>
+          );
+        })}
+      </div>}
+      <div className="flex justify-between">
         <div className="flex">
-          {Object.keys(PathFinderAlgoType).map((at) => {
-            return (<div className="p-2">
-              <Button
-                onClick={() => {
-                  if (isRunning) return;
-                  setAlgoType(at);
-                }}
-                variant={algoType == at ? "contained" : "outlined"}
-              >
-                {PathFinderAlgoType[at]}
-              </Button>
-            </div>);
+          {Object.values(PathFinderAlgoType).map((at) => {
+            return (
+              <div key={at} className="p-2">
+                <Button
+                  onClick={() => {
+                    if (isRunning) return;
+                    console.log("setting type : ", at);
+                    setAlgoType(at);
+                  }}
+                  variant={algoType == at ? "contained" : "outlined"}
+                >
+                  {PathFinderAlgoType[at]}
+                </Button>
+              </div>
+            );
           })}
-          {/* <div className="p-2">
-            <Button
-              onClick={() => {
-                if (isRunning) return;
-                setAlgoType(PathFinderAlgoType.BFS);
-              }}
-              variant={algoType == PathFinderAlgoType.BFS ? "contained" : "outlined"}
-            >
-              BFS
-            </Button>
-          </div>
-          <div className="p-2">
-            <Button
-              onClick={() => {
-                if (isRunning) return;
-                setAlgoType(PathFinderAlgoType.DFS);
-              }}
-              variant={algoType == PathFinderAlgoType.DFS ? "contained" : "outlined"}
-            >
-              DFS
-            </Button>
-          </div> */}
         </div>
-        <div className="flex self-center px-12">
+        <div className="flex self-center ">
           <div className="p-2">
             <Button onClick={clearStates} variant="outlined">
               {" "}
@@ -227,8 +253,11 @@ export default function PathFinderComponent({ size }) {
             </div>
           )}
         </div>
+
+        <div className="flex self-center">Computing : {computingCount}</div>
       </div>
-      <div className="border-2 flex-col items-center justify-end   ">
+
+      <div className=" flex-col items-center justify-end   ">
         {Array.from({ length: size }).map((_, x) => {
           return (
             <div key={x} className="flex ">
@@ -242,7 +271,7 @@ export default function PathFinderComponent({ size }) {
                     isEnd={endCordinates[0] == x && endCordinates[1] == y}
                     cordinates={[x, y]}
                     isBorder={borders.includes(currKey)}
-                    onClickHandler={() => onBoardItemClick([x, y])}
+                    onClickHandler={() => {}}
                     name={getStringName(x, y)}
                     onMouseDown={() => onMouseDownEvent([x, y])}
                     onMouseUp={() => onMouseUpEvent([x, y])}
@@ -251,6 +280,11 @@ export default function PathFinderComponent({ size }) {
                     isRoutePath={routeList.includes(currKey)}
                     isReached={isReached}
                     size={[size, horizontalCount]}
+                    isBorderBroken={
+                      algoType == PathFinderAlgoType.DIJKSTRA &&
+                      routeList.includes(currKey) &&
+                      borders.includes(currKey)
+                    }
                   />
                 );
               })}
