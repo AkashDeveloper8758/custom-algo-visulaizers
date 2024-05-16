@@ -59,6 +59,11 @@ export const NavBar = () => {
         routePath={"pathFinder"}
         navItemType={AlgoType.PathFinderVisualizerr}
       />
+      <NavItem
+        navTitle={"Thief away"}
+        routePath={"thiefAway"}
+        navItemType={AlgoType.ThiefAway}
+      />
      
     </div>
   );

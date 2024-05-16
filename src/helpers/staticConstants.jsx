@@ -3,6 +3,7 @@ export class AlgoType {
   static KnightPath = "horsePath";
   static NQueens = "nqeens";
   static PathFinderVisualizerr = "pathFinder";
+  static ThiefAway = "thiefAway";
 }
 
 export async function waitFor(durationInMillisecond) {

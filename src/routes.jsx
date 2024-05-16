@@ -3,6 +3,7 @@ import Balancer from "./algos/balancer";
 import KnightPath from "./algos/knightPath";
 import Nqueens from "./algos/nQueens";
 import PathFinder from "./algos/pathFinder";
+import ThiefAway from "./algos/thiefAway";
 import App from "./App";
 
 
@@ -34,6 +35,10 @@ export const mainRouter = createHashRouter([
       {
         path: "pathFinder",
         element: <PathFinder />,
+      },
+      {
+        path: "thiefAway",
+        element: <ThiefAway />,
       },
     ],
   },
