@@ -119,11 +119,10 @@ function ThiefAwayComponent({ size }) {
     setIsReached(false);
     setComputingCount(0);
     setDijkstraTraversalList([]);
-
   }
 
   async function startExecution() {
-    clearPathOnly()
+    clearPathOnly();
     let pathData = await thiefOptimalRoute(
       startCordinate,
       endCordinates,
@@ -158,9 +157,14 @@ function ThiefAwayComponent({ size }) {
   return (
     <div className="flex-col  m-8 ">
       <div className=" self-center w-full border-t-2  p-4 text-sm ">
-        You can move start and end positions, create thiefs, then start. This
-        algo will find the best route to stay away from those thiefs and reach
-        the destination.
+        You can drag start and end positions
+      </div>
+      <div className=" self-center w-full border-t-2  p-4 text-sm ">
+        Create thiefs by clicking on the box, then click start.
+      </div>
+      <div className=" self-center w-full border-t-2  p-4 text-sm ">
+        This algo will find the best route to stay away from those thiefs and
+        reach the destination.
       </div>
       <div className="flex justify-between">
         <div className="flex self-center ">
